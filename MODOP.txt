@@ -1,0 +1,8 @@
+1. Préprocessing du dataset d'entrainement
+=======================
+2. Choix de l'algo
+3. Création modèle (algo entrainé sur dataset)
+4. Vérification sur dataset prévu
+=======================
+5. Evaluation sur dataset
+6. Soumission Kaggle
