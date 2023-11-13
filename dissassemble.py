@@ -1,5 +1,3 @@
-"""from capstone import *
-from capstone.x86 import *
 import pefile
 
 #the function takes two arguments, both are fetched from the exe file using
@@ -8,7 +6,8 @@ import pefile
 def get_main_code_section(sections, base_of_code):
     addresses = []
     #get addresses of all sections
-    for section in sections: 
+    for section in sections:
+        print(section)
         addresses.append(section.VirtualAddress)
         
     #if the address of section corresponds to the first instruction then
@@ -25,13 +24,13 @@ def get_main_code_section(sections, base_of_code):
         else:
             #this means we failed to locate it
             return None
-        
+      
 def fine_disassemble(exe):
     #get main code section
     main_code = get_main_code_section(exe.sections, exe.OPTIONAL_HEADER.BaseOfCode)
     #define architecutre of the machine 
-    md = Cs(CS_ARCH_X86, CS_MODE_32)
-    md.detail = True
+    #md = Cs(CS_ARCH_X86, CS_MODE_32)
+    #md.detail = True
     last_address = 0
     last_size = 0
     #Beginning of code section
@@ -41,33 +40,29 @@ def fine_disassemble(exe):
     while True:
         #parse code section and disassemble it
         data = exe.get_memory_mapped_image()[begin:end]
-        for i in md.disasm(data, begin):
+        """for i in md.disasm(data, begin):
             print(i)
             last_address = int(i.address)
-            last_size = i.size
+            last_size = i.size"""
         #sometimes you need to skip some bytes
         begin = max(int(last_address),begin)+last_size+1
         if begin >= end:
             print("out")
             break
-        
+     
 exe_file_path = '0.exe'
 
 try:
   #parse exe file
   exe = pefile.PE(exe_file_path)
+  #print(exe.sections)
   try:
     #call the function we created earlier
     fine_disassemble(exe)
+    print("done")
   except:
     print('something is wrong with this exe file')
 except:
   print('pefile cannot parse this file')
-  """
-from capstone import *
-
-CODE = b"\x55\x48\x8b\x05\xb8\x13\x00\x00"
-
-md = Cs(CS_ARCH_X86, CS_MODE_64)
-for i in md.disasm(CODE, 0x1000):
-    print("0x%x:\t%s\t%s" %(i.address, i.mnemonic, i.op_str))
+  
+# objdump -d --no-addresses --no-show-raw-insn <file>
