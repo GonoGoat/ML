@@ -6,3 +6,6 @@
 =======================
 5. Evaluation sur dataset
 6. Soumission Kaggle
+
+https://isleem.medium.com/create-your-own-disassembler-in-python-pefile-capstone-754f863b2e1c
+https://github.com/zpeterson/pefile/blob/sphinx-autodoc/peutils.py#L499
