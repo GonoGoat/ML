@@ -7,5 +7,6 @@
 5. Evaluation sur dataset
 6. Soumission Kaggle
 
-https://isleem.medium.com/create-your-own-disassembler-in-python-pefile-capstone-754f863b2e1c
 https://github.com/zpeterson/pefile/blob/sphinx-autodoc/peutils.py#L499
+https://www.researchgate.net/publication/336813424_PEFile_Analysis_A_Static_Approach_To_Ransomware_Analysis
+https://link.springer.com/article/10.1007/s40747-021-00560-1#Sec4
