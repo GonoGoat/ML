@@ -5,10 +5,16 @@ import re
 standardSections = [".text", ".bss", ".data",".rdata",".idata",".edata",".pdata",".rsrc",".reloc"]
 standardReg = "^"+ "$|^".join(standardSections) + "$"
 
+def getFileHeaderFeatures(exe):
+    res = {}
+    for entry in exe.FILE_HEADER.__keys__:
+        res[entry] = exe.FILE_HEADER.entry
+    print(res)
+
 #https://stackoverflow.com/questions/53890543/enumerating-all-modules-for-a-binary-using-python-pefile-win32api
-def analyzeImportedDLL(exe):
+def getImportedDLLFeatures(exe):
     for entry in exe.DIRECTORY_ENTRY_IMPORT:
-        print(entry.dll)
+        print(entry.dll.decode("ascii"))
 
 def getEntropyFeatures(entropies):
     entropies = list(filter(lambda en: en != 0,entropies))
@@ -49,7 +55,8 @@ def getFeatures(exe):
 exe_file_path = '0.exe'
 exe = pefile.PE(exe_file_path)
 getFeatures(exe)
-findDLL(exe)
+getImportedDLLFeatures(exe)
+getFileHeaderFeatures(exe)
 #getPeFeatures(exe)
 
 # amountOfSections = getAmountOfSection(exe)
