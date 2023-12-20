@@ -1,9 +1,34 @@
-from pefile import PE
+from pefile import PE, PEFormatError
 from peutils import is_probably_packed
 import re
 
 standardSections = [".text", ".bss", ".data",".rdata",".idata",".edata",".pdata",".rsrc",".reloc"]
 standardReg = "^"+ "$|^".join(standardSections) + "$"
+
+dlls = ["advapi32.dll","user32.dll","ws2_32.dll","wininet.dll",]
+
+features = [
+    # File Header
+    "Machine",
+    "NumberOfSections",
+    "TimeDateStamp",
+    "PointerToSymbolTable",
+    "NumberOfSymbols",
+    "SizeOfOptionalHeader",
+    "Characteristics",
+    # Entropy
+    "amountOfZeroEntropy",
+    "lowestEntropy",
+    "highestEntropy",
+    # Sections
+    "amountOfSuspiciousSections",
+    "amountOfZeroEntropy",
+    # PE Format
+    "isPE",
+    # Packing
+    "seemsPacked",
+    # DLL
+]
 
 def getOptionalHeaderFeatures(exe):
     return {
@@ -25,8 +50,13 @@ def getFileHeaderFeatures(exe):
 
 #https://stackoverflow.com/questions/53890543/enumerating-all-modules-for-a-binary-using-python-pefile-win32api
 def getImportedDLLFeatures(exe):
+    dll = []
     for entry in exe.DIRECTORY_ENTRY_IMPORT:
-        print(entry.dll.decode("ascii"))
+        try:   
+            dll.append(entry.dll.decode("ascii").lower())
+        except (UnicodeDecodeError):
+            dll.append("<unreadable>")
+    
 
 def getEntropyFeatures(entropies):
     filteredEntropies = list(filter(lambda en: en != 0,entropies))
@@ -37,39 +67,50 @@ def getEntropyFeatures(entropies):
     }
     
 def isSuspiciousSectionName(section):
-    decodedName = section.Name.decode("ascii").rstrip('\x00')
+    try:
+        decodedName = section.Name.decode("ascii").rstrip('\x00')
+    except (UnicodeDecodeError):
+        decodedName = "<unreadable>"  
     return re.search(standardReg,decodedName) == None
 
 def getPeSectionsFeature(exe):
     res = {
-        "amountOfSections" : len(exe.sections),
         "amountOfSuspiciousSections" : 0,
         "amountOfZeroEntropy" : 0
     }
     entropies = []
     for section in exe.sections:
         entropies.append(section.get_entropy())
-        if isSuspiciousSectionName(section): res["amountOfSections"] += 1
+        if isSuspiciousSectionName(section): res["amountOfSuspiciousSections"] += 1
     res |= getEntropyFeatures(entropies)
     return res
     
         
 def seemsPacked(exe):
-    return { "seemsPacked" : is_probably_packed(exe)}
-
-def getFeatures(exe):
+    if is_probably_packed(exe):
+        return { "seemsPacked" : 1 }
+    else:
+        return { "seemsPacked" : 0 }
+        
+def getFeatures(exe_file_path):
     res = {}
-    res |= seemsPacked(exe)
-    res |= getPeSectionsFeature(exe)
-    res |= getFileHeaderFeatures(exe)
-    print(res)
+    try:
+        exe = PE(exe_file_path)
+        getImportedDLLFeatures(exe)
+        #getOptionalHeaderFeatures(exe)
+        res |= {"isPE" : 1}
+        res |= seemsPacked(exe)
+        res |= getPeSectionsFeature(exe)
+        res |= getFileHeaderFeatures(exe)
+    except(PEFormatError):
+        for keys in features:
+            res[keys] = 0
+        res |= {"isPE" : 0}
+    return res
 
-exe_file_path = '7026.exe'
-exe = PE(exe_file_path)
-getFeatures(exe)
-getImportedDLLFeatures(exe)
-getOptionalHeaderFeatures(exe)
-#getPeFeatures(exe)
+#res = getFeatures("./heh-cybersecurity-2023-2024/trainset/trainset/safe/1550.exe")
+res = getFeatures("7026.exe")
+#print(res)
 
 # amountOfSections = getAmountOfSection(exe)
 

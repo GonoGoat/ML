@@ -10,3 +10,4 @@
 https://github.com/zpeterson/pefile/blob/sphinx-autodoc/peutils.py#L499
 https://www.researchgate.net/publication/336813424_PEFile_Analysis_A_Static_Approach_To_Ransomware_Analysis
 https://link.springer.com/article/10.1007/s40747-021-00560-1#Sec4
+https://medium.com/mrx-007/basic-static-analysis-of-malware-and-common-dll-ef9455d49968
