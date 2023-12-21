@@ -64,35 +64,36 @@ def getModel(dataset):
     # Select Target
     #target = dataset["isSafe"]
     y_train = dataset["isSafe"]
-    """
-    # Set Training and Testing Data
-    X_train, X_test, y_train, y_test = train_test_split(feature , target, 
-                                                        shuffle = True, 
-                                                        test_size=0.2, 
-                                                        random_state=1)
-
-    # Show the Training and Testing Data
-    print('Shape of training feature:', X_train.shape)
-    print('Shape of testing feature:', X_test.shape)
-    print('Shape of training label:', y_train.shape)
-    print('Shape of training label:', y_test.shape)
-    """
     #model = tree.DecisionTreeClassifier(random_state=0)
-    model = RandomForestClassifier(random_state=0)
+    #model = RandomForestClassifier(random_state=0)
     #model = GaussianNB()
-    #model = KNeighborsClassifier()
+    model = KNeighborsClassifier()
     
     model.fit(X_train, y_train)
     
     return model
     
-    """
+def getEvaluatedset(evalset, evalsetFile, model):
+    output = pd.DataFrame()
+    output["Identifier"] = evalset.loc[:,"name"]
+    output["Label"] = model.predict(evalset.drop('name', axis=1))
+    output["Label"] = output["Label"].apply(lambda x: 'malware' if x==0 else 'safe')
+    
+    output.to_csv(evalsetFile, index=False)
+
+def evaluateModel (testset):
+    X_train = testset.drop('isSafe', axis=1)
+    # Select Target
+    #target = dataset["isSafe"]
+    y_train = testset["isSafe"]
+    
+    
     dtc = tree.DecisionTreeClassifier(random_state=0)
     dtc.fit(X_train, y_train)
 
     # Evaluate Model
     dtc_eval = evaluate_model(dtc, X_train, y_train)
-    print(dtc_eval)
+    print_result(dtc_eval)
     
     # Building Random Forest model 
     rf = RandomForestClassifier(random_state=0)
@@ -121,8 +122,7 @@ def getModel(dataset):
 
     # Print result
     print_result(knn_eval)
-    """
-    """
+
     # Intitialize figure with two plots
     fig, (ax1, ax2) = plt.subplots(1, 2)
     fig.suptitle('Model Comparison', fontsize=16, fontweight='bold')
@@ -179,20 +179,3 @@ def getModel(dataset):
     ax2.legend(loc=4)
 
     plt.show()
-    
-    dataset['isSafe'] = rf.predict(y_train)
-    dataset['isSafe'] = dataset['isSafe'].apply(lambda x: 'yes' if x==0 else 'no')
-
-    # Save new dataframe into csv file
-    dataset.to_csv('res.csv', index=False)
-
-    print(dataset.head(10))
-    """
-    
-def getEvaluatedset(evalset, evalsetFile, model):
-    output = pd.DataFrame()
-    output["Identifier"] = evalset.loc[:,"name"]
-    output["Label"] = model.predict(evalset.drop('name', axis=1))
-    output["Label"] = output["Label"].apply(lambda x: 'malware' if x==0 else 'safe')
-    
-    output.to_csv(evalsetFile, index=False)

@@ -5,11 +5,10 @@ import re
 standardSections = [".text", ".bss", ".data",".rdata",".idata",".edata",".pdata",".rsrc",".reloc"]
 standardReg = "^"+ "$|^".join(standardSections) + "$"
 
-dlls = ["advapi32.dll","user32.dll","ws2_32.dll","wininet.dll",]
+dlls = ["advapi32.dll","user32.dll","ws2_32.dll","wininet.dll","kernel32.dll","shell32.dll"]
 
 features = [
     # File Header
-    "Machine",
     "NumberOfSections",
     "TimeDateStamp",
     "PointerToSymbolTable",
@@ -27,19 +26,61 @@ features = [
     "isPE",
     # Packing
     "seemsPacked",
+    # Relocation
+    "relocationsOverlapEntrypoint",
+    "sequentialRelocs",
     # DLL
-]
+    "amountOfImportedDLL",
+    # Optional Header
+    "SizeOfCode",
+    "SizeOfInitializedData",
+    "SizeOfUninitializedData",
+    "AddressOfEntryPoint",
+    "ImageBase",
+    "MajorSubsystemVersion",
+    "NumberOfRvaAndSizes",
+    "SizeOfImage",
+    "SectionAlignment",
+    "FileAlignment"
+] + dlls
+
+# https://github.com/zpeterson/pefile/blob/sphinx-autodoc/peutils.py#L499
+def hasSuspiciousRelocations(exe):
+    res = {
+        "relocationsOverlapEntrypoint" : 0,
+        "sequentialRelocs" : 0
+    }
+    if hasattr(exe, 'DIRECTORY_ENTRY_BASERELOC'):
+        for base_reloc in exe.DIRECTORY_ENTRY_BASERELOC:
+            last_reloc_rva = None
+            for reloc in base_reloc.entries:
+                if reloc.rva <= exe.OPTIONAL_HEADER.AddressOfEntryPoint <= reloc.rva + 4:
+                    res["relocationsOverlapEntrypoint"] = 1
+
+                if last_reloc_rva is not None and last_reloc_rva <= reloc.rva <= last_reloc_rva + 4:
+                    res["sequentialRelocs"] += 1
+
+                last_reloc_rva = reloc.rva
+    return res
 
 def getOptionalHeaderFeatures(exe):
     return {
-        
+        "SizeOfCode" : exe.OPTIONAL_HEADER.SizeOfCode,
+        "SizeOfInitializedData" : exe.OPTIONAL_HEADER.SizeOfInitializedData,
+        "SizeOfUninitializedData" : exe.OPTIONAL_HEADER.SizeOfUninitializedData,
+        "AddressOfEntryPoint" : exe.OPTIONAL_HEADER.AddressOfEntryPoint,
+        "ImageBase" : exe.OPTIONAL_HEADER.ImageBase,
+        "MajorSubsystemVersion" : exe.OPTIONAL_HEADER.MajorSubsystemVersion,
+        "NumberOfRvaAndSizes" : exe.OPTIONAL_HEADER.NumberOfRvaAndSizes,
+        "SizeOfImage" : exe.OPTIONAL_HEADER.SizeOfImage,
+        "SectionAlignment" : exe.OPTIONAL_HEADER.SectionAlignment,
+        "FileAlignment" : exe.OPTIONAL_HEADER.FileAlignment,
     }
 
 def getFileHeaderFeatures(exe):
     #for entry in exe.FILE_HEADER.__keys__:
        # res[entry] = exe.FILE_HEADER.__dict__[entry]
     return {
-        "Machine" : exe.FILE_HEADER.Machine,
         "NumberOfSections" : exe.FILE_HEADER.NumberOfSections,
         "TimeDateStamp" : exe.FILE_HEADER.TimeDateStamp,
         "PointerToSymbolTable" : exe.FILE_HEADER.PointerToSymbolTable,
@@ -50,12 +91,26 @@ def getFileHeaderFeatures(exe):
 
 #https://stackoverflow.com/questions/53890543/enumerating-all-modules-for-a-binary-using-python-pefile-win32api
 def getImportedDLLFeatures(exe):
+    res = {
+        "amountOfImportedDLL" : 0
+    }
     dll = []
-    for entry in exe.DIRECTORY_ENTRY_IMPORT:
-        try:   
-            dll.append(entry.dll.decode("ascii").lower())
-        except (UnicodeDecodeError):
-            dll.append("<unreadable>")
+    if hasattr(exe, 'DIRECTORY_ENTRY_IMPORT'):
+        for entry in exe.DIRECTORY_ENTRY_IMPORT:
+            try:   
+                dll.append(entry.dll.decode("ascii").lower())
+            except (UnicodeDecodeError):
+                dll.append("<unreadable>")
+            res["amountOfImportedDLL"] += 1
+        for studiedDll in dlls:
+            if studiedDll in dll:
+                res[studiedDll] = 1
+            else:
+                res[studiedDll] = 0
+    else:
+        for studiedDll in dlls:
+            res[studiedDll] = 0
+    return res
     
 
 def getEntropyFeatures(entropies):
@@ -96,12 +151,13 @@ def getFeatures(exe_file_path):
     res = {}
     try:
         exe = PE(exe_file_path)
-        getImportedDLLFeatures(exe)
-        #getOptionalHeaderFeatures(exe)
         res |= {"isPE" : 1}
+        res |= getImportedDLLFeatures(exe)
+        res |= getOptionalHeaderFeatures(exe)
         res |= seemsPacked(exe)
         res |= getPeSectionsFeature(exe)
         res |= getFileHeaderFeatures(exe)
+        res |= hasSuspiciousRelocations(exe)
     except(PEFormatError):
         for keys in features:
             res[keys] = 0
@@ -109,8 +165,8 @@ def getFeatures(exe_file_path):
     return res
 
 #res = getFeatures("./heh-cybersecurity-2023-2024/trainset/trainset/safe/1550.exe")
-res = getFeatures("7026.exe")
-#print(res)
+res = getFeatures("0.exe")
+print(res)
 
 # amountOfSections = getAmountOfSection(exe)
 

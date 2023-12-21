@@ -11,3 +11,9 @@ https://github.com/zpeterson/pefile/blob/sphinx-autodoc/peutils.py#L499
 https://www.researchgate.net/publication/336813424_PEFile_Analysis_A_Static_Approach_To_Ransomware_Analysis
 https://link.springer.com/article/10.1007/s40747-021-00560-1#Sec4
 https://medium.com/mrx-007/basic-static-analysis-of-malware-and-common-dll-ef9455d49968
+https://resources.infosecinstitute.com/topics/digital-forensics/2-malware-researchers-handbook-demystifying-pe-file/
+https://tech-zealots.com/malware-analysis/pe-portable-executable-structure-malware-analysis-part-2/
+https://scholarworks.sjsu.edu/cgi/viewcontent.cgi?article=1624&context=etd_projects
+https://pefile.readthedocs.io/en/latest/modules/pefile.html
+https://github.com/zpeterson/pefile/tree/sphinx-autodoc
+https://www.splunk.com/en_us/blog/security/from-registry-with-love-malware-registry-abuses.html
