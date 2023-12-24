@@ -2,7 +2,6 @@
 ## Basic libs
 import pandas as pd
 import numpy as np
-import warnings
 ## Data Visualization
 #import seaborn as sns
 import matplotlib.pyplot as plt
@@ -46,15 +45,6 @@ def print_result(res):
     print('Cohens Kappa Score:', res['kappa'])
     print('Area Under Curve:', res['auc'])
     print('Confusion Matrix:\n', res['cm'])
-
-"""
-from joblib import dump, load
-
-# Saving model
-dump(rf, 'bank_deposit_classification.joblib')
-# Loading model
-# clf = load('bank_deposit_classification.joblib')
-"""
 
 def getModel(dataset):
     # If necessary to split training data

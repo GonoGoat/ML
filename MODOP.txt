@@ -17,3 +17,4 @@ https://scholarworks.sjsu.edu/cgi/viewcontent.cgi?article=1624&context=etd_proje
 https://pefile.readthedocs.io/en/latest/modules/pefile.html
 https://github.com/zpeterson/pefile/tree/sphinx-autodoc
 https://www.splunk.com/en_us/blog/security/from-registry-with-love-malware-registry-abuses.html
+https://towardsdatascience.com/random-forest-3a55c3aca46d

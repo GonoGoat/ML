@@ -2,11 +2,9 @@ from os import listdir
 from os.path import isfile, join
 from getFeatures import getFeatures
 import pandas as pd
-from numpy import array
-from numpy.random import shuffle
 
 def getFilesNameFromDir(dir):
-    return  array([f for f in listdir("./heh-cybersecurity-2023-2024/%s" % dir) if isfile(join(("./heh-cybersecurity-2023-2024/%s" % dir), f))])
+    return  [f for f in listdir("./heh-cybersecurity-2023-2024/%s" % dir) if isfile(join(("./heh-cybersecurity-2023-2024/%s" % dir), f))]
 
 def generateTrainset(trainsetFile, proportion):
     malware, safe = getFilesNameFromDir("trainset/trainset/malware") , getFilesNameFromDir("trainset/trainset/safe")
